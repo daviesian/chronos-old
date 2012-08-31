@@ -1,6 +1,7 @@
 (ns chronos.db.helpers
   (:use [datomic.api :only [q db] :as d]
-        [clojure.pprint]))
+        [clojure.pprint])
+  (:require [cljs.closure :as cljsc]))
 
 (defn create-attribute
   ([ident type] (create-attribute ident type :db.cardinality/one))
@@ -55,13 +56,9 @@
 (defn pprint-entity [entity]
   (pprint (entity-map entity)))
 
-(defmacro defn-db [name [& args] & body]
-  `(def ~name (d/function '{:lang "clojure"
-                      :params ~args
-                      :code (do ~@body)})))
-
-(comment
-  (defmacro defn-db [name ident [& args] & body]
-    `(def ~name {:db/id (d/tempid :db.part/db)
-                 :db/ident ~ident
-                 :db/fn (db-fn [~@args] ~@body)})))
+(defmacro defn-db-and-js [name [& args] & body]
+  `(do (def ~(symbol (str name "-db")) (d/function '{:lang "clojure"
+                                :params ~args
+                                :code (do ~@body)}))
+       (def ~(symbol (str name "-js"))
+         (cljsc/build (list ~''defn '~name '[~@args] '(do ~@body)) {:output-dir "tmp" :output-to nil :optimizations :simple :pretty-print false}))))

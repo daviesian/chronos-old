@@ -54,7 +54,7 @@
    (create-attribute :calendar.gregorian/minute :db.type/long)
    (create-attribute :calendar.gregorian/second :db.type/long)])
 
-(defn-db days-in-month [year month]
+(defn-db-and-js days-in-month [year month]
   (cond
     (= month 1) 31
     (= month 2) (if (= 0 (mod year 4)) 29 28)
@@ -89,7 +89,7 @@
     :calendar.level/attribute :calendar.gregorian/day
     :calendar.level/name "Day"
     :calendar.level/index 2
-    :calendar.level/maxValFn days-in-month
+    :calendar.level/maxValFn days-in-month-db
     :calendar/_level (d/tempid :db.part/calendars 1)}
    {:db/id (d/tempid :db.part/calendars)
     :calendar.level/attribute :calendar.gregorian/hour
